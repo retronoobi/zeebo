@@ -1,0 +1,56 @@
+name: Core EmuVR Windows x64
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: emuvr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      RUSTUP_TOOLCHAIN: stable-x86_64-pc-windows-gnu
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Ferramentas GNU e OpenGL
+        id: msys
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-clang
+      - name: Rust Windows GNU
+        run: rustup toolchain install stable-x86_64-pc-windows-gnu --profile minimal
+      - name: Compilar com runtimes estáticos
+        run: ./build-core.ps1 -Action build -MsysRoot '${{ steps.msys.outputs.msys2-location }}'
+      - name: Testes do frontend
+        run: ./build-core.ps1 -Action test -MsysRoot '${{ steps.msys.outputs.msys2-location }}'
+      - name: Empacotar e verificar ABI e dependências
+        run: ./scripts/package-core.ps1 -MsysRoot '${{ steps.msys.outputs.msys2-location }}'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zeebx-emuvr-windows-x64
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14
