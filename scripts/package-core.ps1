@@ -27,13 +27,7 @@ foreach ($name in @('LICENSE','LICENSE-GPL3','THIRD-PARTY-NOTICES.txt','README.m
 }
 Copy-Item -LiteralPath examples/Z-Wheel.zeebo -Destination $stage
 # Além das crates, a DLL incorpora os runtimes GNU e pthread do MSYS2.
-foreach ($runtime in @('gcc-libs','libwinpthread')) {
-    $licenseDir = Join-Path $MsysRoot "ucrt64/share/licenses/$runtime"
-    if (!(Test-Path -LiteralPath $licenseDir)) { throw "Licenças ausentes: $licenseDir" }
-    $licenseOut = Join-Path $stage "licenses/$runtime"
-    New-Item -ItemType Directory -Path $licenseOut -Force | Out-Null
-    Copy-Item -Path "$licenseDir/*" -Destination $licenseOut -Recurse
-}
+& (Join-Path $PSScriptRoot 'copy-runtime-licenses.ps1') -MsysRoot $MsysRoot -Destination $stage
 $hash = (Get-FileHash -LiteralPath $dll -Algorithm SHA256).Hash.ToLowerInvariant()
 "$hash  zeebx_libretro.dll" | Set-Content -LiteralPath (Join-Path $stage 'SHA256SUMS.txt') -Encoding ascii
 New-Item -ItemType Directory -Path dist -Force | Out-Null
