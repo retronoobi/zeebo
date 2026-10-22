@@ -2,7 +2,7 @@ param([ValidateSet('check','test','build','standalone')][string]$Action = 'build
     [string]$MsysRoot = 'C:/msys64')
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
-# A instalação local é opcional; uma ferramenta Rust normal no PATH também funciona.
+# A instalaÃ§Ã£o local Ã© opcional; uma ferramenta Rust normal no PATH tambÃ©m funciona.
 if (!$env:CI -and (Test-Path '../.build-tools/cargo/bin/cargo.exe')) {
     $env:RUSTUP_HOME = Join-Path (Get-Location) '../.build-tools/rustup'
     $env:CARGO_HOME = Join-Path (Get-Location) '../.build-tools/cargo'
@@ -16,7 +16,7 @@ if (Test-Path (Join-Path $MsysRoot 'ucrt64/bin/gcc.exe')) {
     $env:PATH = "$MsysRoot/ucrt64/bin;$MsysRoot/usr/bin;$env:PATH"
     $env:CC = 'gcc'
     $env:CXX = 'g++'
-    # O driver C++ aplica -static-libstdc++ também à biblioteca pedida pelo Dynarmic.
+    # O driver C++ aplica -static-libstdc++ tambÃ©m Ã  biblioteca pedida pelo Dynarmic.
     $env:CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER = 'g++'
     $env:CMAKE_TOOLCHAIN_FILE = Join-Path $PSScriptRoot 'scripts/windows-gnu.cmake'
     $gccIncludes = (& gcc -print-file-name=include).Trim()
@@ -41,12 +41,12 @@ switch ($Action) {
                 if (!(Test-Path -LiteralPath $sourceLibrary)) { throw "Biblioteca estatica ausente: $library" }
                 Copy-Item -LiteralPath $sourceLibrary -Destination (Join-Path $runtimeDirectory $library) -Force
             }
-            # Símbolos internos não são necessários na entrega; os exports da ABI permanecem.
+            # SÃ­mbolos internos nÃ£o sÃ£o necessÃ¡rios na entrega; os exports da ABI permanecem.
             cargo rustc --locked --release -p zeebx-libretro -- -L "native=$runtimeDirectory" -C link-arg=-static-libgcc -C strip=symbols
         } else {
             cargo build --locked --release -p zeebx-libretro
         }
     }
-    'standalone' { cargo check --locked -p zeebx-standalone-egui }
+    'standalone' { cargo check --locked -p zeebx-cli }
 }
 exit $LASTEXITCODE

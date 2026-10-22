@@ -1,6 +1,6 @@
 # Zeebx EmuVR — core libretro
 
-Adaptação comunitária do [Zeebx](https://github.com/ZeebxTeam/zeebx-emu), baseada na versão **0.4.2**, para Windows x64, EmuVR e RetroArch 1.7.5. Este fork não é uma release oficial da ZeebxTeam. O motor de emulação e suas correções são do projeto original.
+Adaptação comunitária do [Zeebx](https://github.com/ZeebxTeam/zeebx-emu), baseada na versão **0.4.3**, para Windows x64, EmuVR e RetroArch 1.7.5. Este fork não é uma release oficial da ZeebxTeam. O motor de emulação e suas correções são do projeto original.
 
 ## Instalação
 
@@ -39,11 +39,12 @@ O campo `games` indica a biblioteca da Z-Wheel; não é uma chave com o nome da 
 - Compensação da cadência de 60 Hz anunciada ao frontend.
 - Mapeamento anterior do port, com Start e Select como HOME; sem instrumentação de testes de controles.
 - Cache das opções de espelhamento do direcional no analógico.
+- Correção oficial da água de Boia Cross, com referências às duas unidades de textura.
 - Runtimes GNU estáticos e símbolos internos removidos na DLL distribuída.
 
 O comportamento dos botões durante o jogo pode divergir das instruções exibidas por alguns títulos; não há remapeamento automático por jogo. O netplay do EmuVR não está validado e apresentou crescimento excessivo de memória em testes anteriores. A compatibilidade de save states entre versões não é garantida.
 
-A validação local da 0.4.2 incluiu ABI, testes do frontend, splash e execução OpenGL de Z-Wheel, Double Dragon e Boia Cross. Isso não substitui testes manuais de cada jogo no RetroArch/EmuVR.
+A validação desta atualização está registrada em `UPDATE-EMUVR.md`. Isso não substitui testes manuais de cada jogo no RetroArch/EmuVR.
 
 ## Compilar no Windows
 
@@ -67,9 +68,17 @@ Para MSYS2 fora de `C:/msys64`, passe `-MsysRoot 'caminho'` aos scripts. O ZIP f
 
 Os testes comuns não distribuem ROMs; testes condicionais que exigem conteúdo local são pulados quando ele não está configurado. `test-video.py` é um teste local de OpenGL e requer Pillow, Windows e ROM própria.
 
+## GitHub Actions e publicação
+
+Publique **o conteúdo desta pasta** na raiz do novo repositório: `Cargo.toml`, `src/`, `frontends/`, `scripts/` e `.github/` devem ficar na raiz. Não publique a pasta pai com outras versões, `target/`, `entrega/`, ferramentas locais ou ROMs.
+
+O workflow **Core EmuVR Windows x64** roda em pull requests, pushes para `main`/`master`, tags `v*` e manualmente pela aba Actions. Compila em Windows com GNU/UCRT, executa testes, verifica os 25 exports e a ABI 1, rejeita dependências externas inesperadas e entrega o ZIP com SHA-256 em Artifacts. Não precisa de segredos ou permissão de escrita e não cria releases automaticamente. Baixe o artefato e anexe o ZIP à sua release quando estiver pronto.
+
+O workflow usa Rust stable e pacotes MSYS2 atualizados: `Cargo.lock` fixa as crates, mas builds de datas diferentes não são necessariamente idênticos byte a byte.
+
 ## Organização e créditos
 
-- `src/`: motor oficial 0.4.2, preservado.
+- `src/`: motor oficial 0.4.3, sem alterações locais.
 - `frontends/libretro/`: adaptações deste port; `content.rs`, `pacing.rs` e `presentation.rs` separam lançadores, cadência e apresentação.
 - `scripts/`: compilação auxiliar, testes e empacotamento autossuficientes.
 - `examples/`: exemplo sem conteúdo do console.

@@ -12,7 +12,8 @@ permissions:
 
 concurrency:
   group: emuvr-${{ github.ref }}
-  cancel-in-progress: true
+  # Uploads ou commits sucessivos não devem interromper uma compilação em curso.
+  cancel-in-progress: false
 
 jobs:
   windows:

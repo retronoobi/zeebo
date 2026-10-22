@@ -4526,3 +4526,6 @@ mod emuvr_tests {
         }
     }
 }
+
+#[cfg(test)]
+mod water_tests;

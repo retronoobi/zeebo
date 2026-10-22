@@ -1,29 +1,34 @@
-# Port EmuVR baseado em 0.4.2
+# Port EmuVR sobre Zeebx 0.4.3
 
-Atualização de 11/10/2026 em pasta separada, preservando a entrega 0.4.1.
+Atualização de 22/10/2026, em pasta própria. A versão anterior permanece em `old/zeebx-original-emuvr-0.4.2`.
 
-Motor `src/` idêntico ao oficial 0.4.2. Inclui as correções upstream do relógio dos save states, limite acumulado de chamadas, desempenho do Dynarmic, formatação BREW, heap e renderização GL.
+## Integração
 
-As adaptações do frontend 0.4.1 foram integradas por comparação de três versões: port anterior, base oficial anterior e base oficial nova. Mantidos lançadores `.zeebo`, caminhos relativos, catálogo, reset, splash e transições da Z-Wheel, composição completa RGB565, materialização explícita GL e retomada do contexto, cache de dpad_to_analog e cadência virtual de 60 Hz. Frameskip usa agora os tipos e o contador compartilhados da 0.4.2.
+- Motor `src/` idêntico ao oficial 0.4.3. A correção local limitada da água foi substituída pelo combinador oficial, com fontes das duas unidades de textura; o teste local foi adaptado à nova API.
+- Preservados lançadores .zeebo, catálogo, caminhos relativos e separação entre lançador e pacote real.
+- Preservadas apresentação RGB565 completa, materialização GL, recuperação do contexto, splash pelo overlay do VFS e ordem da transição do Z-Wheel.
+- Preservada integralmente a compensação de cadência/áudio do Boia Cross. O usuário confirmou que o problema ainda ocorre no core oficial 0.4.3; não removemos a compensação baseada no relógio virtual.
+- Mapeamento anterior, Start/Select=HOME e cache de dpad_to_analog preservados. O motor novo acrescenta a compatibilidade HOME/Quake e corrige a soltura BREW; não há remapeamento dos botões de ação por jogo.
+- Incorporadas as correções oficiais de save states, apresentação GL, Alice, Ultimate Chess e Rally Master Pro.
+- Workflow EmuVR, verificação de ABI, runtimes estáticos e símbolos internos removidos preservados. O comando auxiliar `standalone` agora verifica `zeebx-cli`, pois o pacote egui foi removido pelo upstream.
+- Nenhuma instrumentação de mapeamento ou captura de desenhos foi importada da árvore de diagnóstico.
 
-Mapeamento anterior preservado, Start/Select como HOME. Nenhuma sonda própria de mapeamento foi reintroduzida. Fast-forward, rewind, turbo e configurações por jogo continuam a cargo do frontend RetroArch; não foi adicionada interface de standalone.
+O lock e os avisos de terceiros são os da 0.4.3. O lock só acrescenta ao pacote libretro as dependências serde e serde_json já existentes no workspace, sem trocar ou acrescentar versões de bibliotecas. A conferência automática dos avisos não pôde ser executada porque cargo-about 0.9.2 não está instalado; o arquivo de avisos oficial foi preservado integralmente.
 
-Cargo.lock difere da base apenas pelas dependências serde/serde_json do frontend, já presentes no workspace oficial e nos avisos de terceiros. Não houve atualização de versões de dependências por iniciativa do port. A distribuição inclui LICENSE, LICENSE-GPL3 e THIRD-PARTY-NOTICES.txt oficiais. Compilação GNU mantém runtimes estáticos e remoção de símbolos internos.
+## Limites
 
-Estados novos incluem a parcela de tempo ocioso corrigida pelo upstream; estados antigos sem ela mantêm a limitação anterior. Não se presume compatibilidade completa entre versões nem solução de netplay.
+A reconstrução oficial do áudio ao restaurar estados não é reprodução exata de toda a posição do mixer: loops podem recomeçar e sons sem cache podem aguardar nova reprodução. Não há nova promessa de determinismo, compatibilidade integral entre estados de versões diferentes ou solução do consumo de RAM em netplay.
 
-Os resultados de validação da entrega serão registrados abaixo.
+Testes isolados não substituem a avaliação manual no EmuVR, especialmente do áudio durante a corrida e do ciclo interativo do Z-Wheel.
 
-## Entrega validada
+## Validação da entrega
 
-Compilação release concluída: 12,868,096 bytes. SHA-256 `f19b252f68dc7bbc29355954d7e9fbdb5f841a99dd168b7134169198cef3ccc3`. ABI 1, 25 exports, extensões mod|zip|7z|zeebo. Dependências importadas apenas do Windows/UCRT; sem DLL externa de runtime GCC. DLL conferida sem INPUT-TRACE. Entrega 0.4.1 preservada e hash conferido.
+- Build release Windows x64 concluído. 20 testes comuns passaram; um teste opcional de splash foi executado separadamente com Z-Wheel e Double Dragon e também passou. Os testes condicionais da suíte que exigem ZEEBX_CORE_ROM retornam sem ROM; não representam execução adicional de jogos.
+- Host WGL: Z-Wheel por .zeebo e Double Dragon, 600 chamadas cada, com reset. Boia Cross por ZIP, 600 e 1.200 chamadas, com reset. Todas as execuções passaram, incluindo uso do contexto GL pelo host entre chamadas e atualização/cache das opções do analógico.
+- Z-Wheel: captura completa, com 150.464 pixels não pretos na metade inferior. Teste separado confirmou splash do overlay herdado na troca de applet; simula a troca de arquivo do guest e não automatiza toda a navegação interativa.
+- Boia Cross: 7,537 s de áudio em 600 chamadas e 17,520 s em 1.200, diferença de 9,983 s para as 600 adicionais. As transições iniciais apresentam quadros sem avanço virtual. Medição consistente com a cadência anterior; não é avaliação auditiva da corrida.
+- ABI 1, 25 exports, extensões mod|zip|7z|zeebo e dependências Windows/UCRT verificadas. O verificador do upstream foi adaptado para reconhecer a extensão do port.
+- DLL: 12.894.208 bytes; SHA-256 `29591d3d180fd89246bb97824e62a3feeb8d274fd517086b6d1f6f768a3b0f20`.
+- Avisos de compilação restantes: três variáveis estáticas de áudio do upstream e o campo gl do apresentador, sem erros de compilação.
 
-Suíte do frontend: 18 testes passaram e um ignorado; os testes condicionais de ROM retornam sem executar quando suas variáveis não são fornecidas. O teste ignorado de splash foi executado separadamente com Z-Wheel e Double Dragon e passou.
-
-Host WGL: 600 chamadas por conteúdo; Z-Wheel via .zeebo, Double Dragon e Boia Cross passaram, incluindo reset e cache/mudança de opções. Áudio acumulado: 9,999 s, 10,007 s e 7,537 s respectivamente (Boia inclui abertura). Z-Wheel conferida visualmente em quadro completo 640x480. Resultados equivalentes aos registrados no port 0.4.1.
-
-Não foi feita validação manual no EmuVR, teste longo de Ridge Racer, nem cobertura de todos os jogos corrigidos. A correção de relógio dos save states foi incorporada do upstream, sem teste específico dela nesta entrega.
-
-## Preparação para publicação
-
-Scripts e host WGL tornados autossuficientes, README do fork e exemplo público adicionados. Workflows originais arquivados em docs/upstream-workflows; somente emuvr-windows.yml fica ativo. Motor e lógica do frontend preservados. Novo script compilou localmente; pacote passou na ABI e na lista de dependências, incluindo licenças dos runtimes estáticos. YAML e sintaxe PowerShell verificados. Workflow ainda não executado no GitHub. A recompilação de preparação tem SHA256 0eb6b289582712a897c5aa797c33e84e1dab126b0bc0d60274204e46ba926c81; entrega anterior permanece em entrega/.
+Não foram executados testes de netplay, corridas completas ou compatibilidade de estados entre versões.
