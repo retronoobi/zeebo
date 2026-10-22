@@ -68,14 +68,6 @@ Para MSYS2 fora de `C:/msys64`, passe `-MsysRoot 'caminho'` aos scripts. O ZIP f
 
 Os testes comuns não distribuem ROMs; testes condicionais que exigem conteúdo local são pulados quando ele não está configurado. `test-video.py` é um teste local de OpenGL e requer Pillow, Windows e ROM própria.
 
-## GitHub Actions e publicação
-
-Publique **o conteúdo desta pasta** na raiz do novo repositório: `Cargo.toml`, `src/`, `frontends/`, `scripts/` e `.github/` devem ficar na raiz. Não publique a pasta pai com outras versões, `target/`, `entrega/`, ferramentas locais ou ROMs.
-
-O workflow **Core EmuVR Windows x64** roda em pull requests, pushes para `main`/`master`, tags `v*` e manualmente pela aba Actions. Compila em Windows com GNU/UCRT, executa testes, verifica os 25 exports e a ABI 1, rejeita dependências externas inesperadas e entrega o ZIP com SHA-256 em Artifacts. Não precisa de segredos ou permissão de escrita e não cria releases automaticamente. Baixe o artefato e anexe o ZIP à sua release quando estiver pronto.
-
-O workflow usa Rust stable e pacotes MSYS2 atualizados: `Cargo.lock` fixa as crates, mas builds de datas diferentes não são necessariamente idênticos byte a byte.
-
 ## Organização e créditos
 
 - `src/`: motor oficial 0.4.3, sem alterações locais.
